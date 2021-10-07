@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width,height=device-height, user-scalable=no"
     />
-    <title>Leaflet.Editable demo</title>
+    <title>bbox-tool</title>
     <link
       rel="stylesheet"
       href="https://npmcdn.com/leaflet@1.3.4/dist/leaflet.css"
@@ -29,19 +29,23 @@
         display: flex;
         flex-direction: column;
       }
+      #panel {
+        margin: 10px;
+      }
     </style>
   </head>
   <body>
     <div id="wrapper">
-      <div>
-        <label
-          >Format:
+      <div id="panel">
+        <label>
+          Format:
           <select id="format">
-            <option value="ST_MakeEnvelope">ST_MakeEnvelope</option>
             <option value="--bbox">--bbox</option>
-          </select></label
-        >
-        <span id="output" />
+            <option value="minmax">--x_min --y_min --x_max --y_max</option>
+            <option value="ST_MakeEnvelope">ST_MakeEnvelope</option>
+          </select>
+        </label>
+        <pre id="output" />
       </div>
       <div id="map"></div>
     </div>
@@ -67,12 +71,16 @@
       bounds = rec.getBounds();
       if (format == "ST_MakeEnvelope") {
         output.textContent = `ST_MakeEnvelope(${bounds._southWest.lng}, ${bounds._southWest.lat}, ${bounds._northEast.lng}, ${bounds._northEast.lat}, 4326)`;
+      } else if (format == "--bbox") {
+        output.textContent = `--bbox ${bounds._southWest.lng},${bounds._southWest.lat},${bounds._northEast.lng},${bounds._northEast.lat}`;
+      } else if (format == "minmax") {
+        output.textContent = `--x_min ${bounds._southWest.lng} --y_min ${bounds._southWest.lat} --x_max ${bounds._northEast.lng} --y_max ${bounds._northEast.lat}`;
       }
     };
 
     map.on("editable:editing", updateOutput);
     map.on("editable:dragend", updateOutput);
-    document.getElementById("format").addEventListener('change',updateOutput);
+    document.getElementById("format").addEventListener("change", updateOutput);
 
     updateOutput();
   </script>
