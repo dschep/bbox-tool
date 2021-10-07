@@ -17,7 +17,9 @@
 
     <style type="text/css">
       html,
-      body {
+      body,
+      #wrapper,
+      #map {
         margin: 0;
         padding: 0;
         height: 100%;
@@ -26,13 +28,6 @@
       #wrapper {
         display: flex;
         flex-direction: column;
-        height: 100%;
-        width: 100%;
-      }
-      #map {
-        height: 100%;
-        width: 100%;
-        flex-grow: 1;
       }
     </style>
   </head>
@@ -61,6 +56,9 @@
           }
         ).addTo(map);
 
+      map.on("editable:editing", function(e) {
+        console.log(e)
+      });
       var rec = L.rectangle([[50, -115], [45, -105]]).addTo(map);
       rec.enableEdit();
     </script>
