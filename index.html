@@ -36,31 +36,44 @@
       <div>
         <label
           >Format:
-          <select>
+          <select id="format">
             <option value="ST_MakeEnvelope">ST_MakeEnvelope</option>
+            <option value="--bbox">--bbox</option>
           </select></label
         >
+        <span id="output" />
       </div>
       <div id="map"></div>
     </div>
-
-    <script type="text/javascript">
-      var startPoint = [40, -100];
-      var map = L.map("map", { editable: true }).setView(startPoint, 5),
-        tilelayer = L.tileLayer(
-          "http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
-          {
-            maxZoom: 20,
-            attribution:
-              'Data \u00a9 <a href="http://www.openstreetmap.org/copyright"> OpenStreetMap Contributors </a> Tiles \u00a9 HOT'
-          }
-        ).addTo(map);
-
-      map.on("editable:editing", function(e) {
-        console.log(e)
-      });
-      var rec = L.rectangle([[50, -115], [45, -105]]).addTo(map);
-      rec.enableEdit();
-    </script>
   </body>
+  <script type="text/javascript">
+    var startPoint = [40, -100];
+    var map = L.map("map", { editable: true }).setView(startPoint, 5),
+      tilelayer = L.tileLayer(
+        "http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+        {
+          maxZoom: 20,
+          attribution:
+            'Data \u00a9 <a href="http://www.openstreetmap.org/copyright"> OpenStreetMap Contributors </a> Tiles \u00a9 HOT'
+        }
+      ).addTo(map);
+
+    var rec = L.rectangle([[50, -115], [45, -105]]).addTo(map);
+    rec.enableEdit();
+
+    const updateOutput = function() {
+      const format = document.getElementById("format").value;
+      const output = document.getElementById("output");
+      bounds = rec.getBounds();
+      if (format == "ST_MakeEnvelope") {
+        output.textContent = `ST_MakeEnvelope(${bounds._southWest.lng}, ${bounds._southWest.lat}, ${bounds._northEast.lng}, ${bounds._northEast.lat}, 4326)`;
+      }
+    };
+
+    map.on("editable:editing", updateOutput);
+    map.on("editable:dragend", updateOutput);
+    document.getElementById("format").addEventListener('change',updateOutput);
+
+    updateOutput();
+  </script>
 </html>
