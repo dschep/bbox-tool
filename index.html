@@ -94,6 +94,9 @@
         }
       ).addTo(map);
     hashToMap(map);
+    mapToHash(map);
+    map.on("moveend", () => mapToHash(map));
+    window.addEventListener("hashchange", () => hashToMap(map));
 
     var rec = L.rectangle([[50, -115], [45, -105]]).addTo(map);
     rec.enableEdit();
@@ -116,11 +119,6 @@
     map.on("editable:editing", updateOutput);
     map.on("editable:dragend", updateOutput);
     document.getElementById("format").addEventListener("change", updateOutput);
-
-    map.on("moveend", () => {
-      mapToHash(map);
-    });
-    window.addEventListener("hashchange", () => hashToMap(map));
 
     updateOutput();
   </script>
