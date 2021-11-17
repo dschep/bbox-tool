@@ -43,6 +43,7 @@
             <option value="--bbox">--bbox</option>
             <option value="minmax">--x_min --y_min --x_max --y_max</option>
             <option value="ST_MakeEnvelope">ST_MakeEnvelope</option>
+            <option value="WKT">WKT</option>
           </select>
         </label>
         <pre id="output" />
@@ -71,6 +72,8 @@
       bounds = rec.getBounds();
       if (format == "ST_MakeEnvelope") {
         output.textContent = `ST_MakeEnvelope(${bounds._southWest.lng}, ${bounds._southWest.lat}, ${bounds._northEast.lng}, ${bounds._northEast.lat}, 4326)`;
+      } else if (format == "WKT") {
+        output.textContent = `POLYGON ((${bounds._southWest.lng} ${bounds._southWest.lat}, ${bounds._southWest.lng} ${bounds._northEast.lat}, ${bounds._northEast.lng} ${bounds._northEast.lat}, ${bounds._northEast.lng} ${bounds._southWest.lat}, ${bounds._southWest.lng} ${bounds._southWest.lat}))`;
       } else if (format == "--bbox") {
         output.textContent = `--bbox=${bounds._southWest.lng},${bounds._southWest.lat},${bounds._northEast.lng},${bounds._northEast.lat}`;
       } else if (format == "minmax") {
