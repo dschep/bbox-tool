@@ -52,8 +52,39 @@
     </div>
   </body>
   <script type="text/javascript">
-    var startPoint = [40, -100];
-    var map = L.map("map", { editable: true }).setView(startPoint, 5),
+    const mapToHash = function(map) {
+      const center = map.getCenter(),
+        zoom = map.getZoom(),
+        precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2));
+
+      window.location.hash =
+        "#" +
+        [
+          zoom,
+          center.lat.toFixed(precision),
+          center.lng.toFixed(precision)
+        ].join("/");
+    };
+    const hashToMap = function(map, center = [40, -100], zoom = 5) {
+      hash = window.location.hash;
+      if (hash.indexOf("#") === 0) {
+        hash = hash.substr(1);
+      }
+      var args = hash.split("/");
+      if (args.length == 3) {
+        var z = parseInt(args[0], 10),
+          lat = parseFloat(args[1]),
+          lon = parseFloat(args[2]);
+        if (!(isNaN(z) || isNaN(lat) || isNaN(lon))) {
+          center = new L.LatLng(lat, lon);
+          zoom = z;
+        }
+      }
+
+      map.setView(center, zoom);
+    };
+
+    var map = L.map("map", { editable: true }),
       tilelayer = L.tileLayer(
         "http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
         {
@@ -62,6 +93,7 @@
             'Data \u00a9 <a href="http://www.openstreetmap.org/copyright"> OpenStreetMap Contributors </a> Tiles \u00a9 HOT'
         }
       ).addTo(map);
+    hashToMap(map);
 
     var rec = L.rectangle([[50, -115], [45, -105]]).addTo(map);
     rec.enableEdit();
@@ -84,6 +116,11 @@
     map.on("editable:editing", updateOutput);
     map.on("editable:dragend", updateOutput);
     document.getElementById("format").addEventListener("change", updateOutput);
+
+    map.on("moveend", () => {
+      mapToHash(map);
+    });
+    window.addEventListener("hashchange", () => hashToMap(map));
 
     updateOutput();
   </script>
