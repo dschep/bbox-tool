@@ -121,5 +121,24 @@
     document.getElementById("format").addEventListener("change", updateOutput);
 
     updateOutput();
+
+    document.body.addEventListener("dragover", ev => ev.preventDefault());
+    document.body.addEventListener("drop", ev => {
+      ev.stopPropagation();
+      ev.preventDefault();
+      const droppedFiles = e.dataTransfer.files;
+      for (const file of droppedFiles) {
+        const ext = file.name.split('.').slice(-1)[0];
+        if (!known_types.includes(ext)) {
+          alert(`Unsupported file extension: .${ext}`);
+          return
+        }
+        const omnivoreLayer = omnivore[ext === 'json' ? 'geojson' : ext](URL.createObjectURL(file))
+          .on("ready", () => {
+            this.map.fitBounds(omnivoreLayer.getBounds());
+          })
+          .addTo(this.map);
+        }
+    });
   </script>
 </html>
