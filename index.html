@@ -14,6 +14,7 @@
     <script src="https://npmcdn.com/leaflet@1.3.4/dist/leaflet.js"></script>
     <script src="https://npmcdn.com/leaflet.path.drag/src/Path.Drag.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-editable/1.2.0/Leaflet.Editable.min.js"></script>
+    <script src="//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js"></script>
 
     <style type="text/css">
       html,
@@ -126,19 +127,17 @@
     document.body.addEventListener("drop", ev => {
       ev.stopPropagation();
       ev.preventDefault();
-      const droppedFiles = e.dataTransfer.files;
-      for (const file of droppedFiles) {
-        const ext = file.name.split('.').slice(-1)[0];
-        if (!known_types.includes(ext)) {
+
+      for (const file of ev.dataTransfer.files) {
+        const ext = file.name.split(".").slice(-1)[0];
+        if (!omnivore[ext === "json" ? "geojson" : ext]) {
           alert(`Unsupported file extension: .${ext}`);
-          return
+          return;
         }
-        const omnivoreLayer = omnivore[ext === 'json' ? 'geojson' : ext](URL.createObjectURL(file))
-          .on("ready", () => {
-            this.map.fitBounds(omnivoreLayer.getBounds());
-          })
-          .addTo(this.map);
-        }
+        const omnivoreLayer = omnivore[ext === "json" ? "geojson" : ext](
+          URL.createObjectURL(file)
+        ).addTo(map);
+      }
     });
   </script>
 </html>
