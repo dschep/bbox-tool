@@ -59,25 +59,30 @@
         <button id="copy">Copy</button>
       </div>
       <div id="map"></div>
-    </div>  <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
-
+    </div>
+    <div
+      class="glitchButton"
+      style="position: fixed; top: 20px; right: 20px"
+    ></div>
   </body>
   <script type="text/javascript">
-    const mapToHash = function (map) {
+    const mapToStorage = function (map) {
       const center = map.getCenter(),
         zoom = map.getZoom(),
         precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2));
 
-      window.location.hash =
+      window.localStorage.setItem(
+        "maphash",
         "#" +
-        [
-          zoom,
-          center.lat.toFixed(precision),
-          center.lng.toFixed(precision),
-        ].join("/");
+          [
+            zoom,
+            center.lat.toFixed(precision),
+            center.lng.toFixed(precision),
+          ].join("/")
+      );
     };
-    const hashToMap = function (map, center = [40, -100], zoom = 5) {
-      hash = window.location.hash;
+    const storageToMap = function (map, center = [40, -100], zoom = 5) {
+      hash = window.localStorage.getItem("maphash") || "";
       if (hash.indexOf("#") === 0) {
         hash = hash.substr(1);
       }
@@ -104,15 +109,13 @@
             'Data \u00a9 <a href="http://www.openstreetmap.org/copyright"> OpenStreetMap Contributors </a> Tiles \u00a9 HOT',
         }
       ).addTo(map);
-    hashToMap(map);
-    mapToHash(map);
-    map.on("moveend", () => mapToHash(map));
+    storageToMap(map);
+    mapToStorage(map);
+    map.on("moveend", () => mapToStorage(map));
     window.addEventListener("hashchange", () => hashToMap(map));
 
-    var rec = L.rectangle([
-      [50, -115],
-      [45, -105],
-    ]).addTo(map);
+    const bbox = JSON.parse(window.localStorage.getItem('bbox') || 
+    const rec = L.rectangle(bbox).addTo(map);
     rec.enableEdit();
 
     const updateOutput = function () {
@@ -141,9 +144,22 @@
           }
         );
     };
+    const bboxToStorage = function () {
+      bounds = rec.getBounds();
+      window.localStorage.setItem(
+        "bbox",
+        JSON.stringify([
+          [bounds._southWest.lng, bounds._southWest.lat],
+          [bounds._northEast.lng, bounds._northEast.lat],
+        ])
+      );
+    };
 
     map.on("editable:editing", updateOutput);
-    map.on("editable:dragend", updateOutput);
+    map.on("editable:dragend", () => {
+      updateOutput();
+      bboxToStorage();
+    });
     document.getElementById("format").addEventListener("change", updateOutput);
     document.getElementById("copy").addEventListener("click", copyToClipboard);
 
