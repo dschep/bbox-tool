@@ -33,6 +33,13 @@
       #panel {
         margin: 10px;
       }
+      button,
+      pre {
+        float: left;
+      }
+      pre {
+        margin: 2px;
+      }
     </style>
   </head>
   <body>
@@ -41,19 +48,22 @@
         <label>
           Format:
           <select id="format">
-            <option value="--bbox">--bbox</option>
-            <option value="minmax">--x_min --y_min --x_max --y_max</option>
             <option value="ST_MakeEnvelope">ST_MakeEnvelope</option>
             <option value="WKT">WKT</option>
+            <option value="--bbox">--bbox</option>
+            <option value="minmax">--x_min --y_min --x_max --y_max</option>
           </select>
         </label>
-        <pre id="output" />
+        <br />
+        <pre id="output"></pre>
+        <button id="copy">Copy</button>
       </div>
       <div id="map"></div>
-    </div>
+    </div>  <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
+
   </body>
   <script type="text/javascript">
-    const mapToHash = function(map) {
+    const mapToHash = function (map) {
       const center = map.getCenter(),
         zoom = map.getZoom(),
         precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2));
@@ -63,10 +73,10 @@
         [
           zoom,
           center.lat.toFixed(precision),
-          center.lng.toFixed(precision)
+          center.lng.toFixed(precision),
         ].join("/");
     };
-    const hashToMap = function(map, center = [40, -100], zoom = 5) {
+    const hashToMap = function (map, center = [40, -100], zoom = 5) {
       hash = window.location.hash;
       if (hash.indexOf("#") === 0) {
         hash = hash.substr(1);
@@ -91,7 +101,7 @@
         {
           maxZoom: 20,
           attribution:
-            'Data \u00a9 <a href="http://www.openstreetmap.org/copyright"> OpenStreetMap Contributors </a> Tiles \u00a9 HOT'
+            'Data \u00a9 <a href="http://www.openstreetmap.org/copyright"> OpenStreetMap Contributors </a> Tiles \u00a9 HOT',
         }
       ).addTo(map);
     hashToMap(map);
@@ -99,10 +109,13 @@
     map.on("moveend", () => mapToHash(map));
     window.addEventListener("hashchange", () => hashToMap(map));
 
-    var rec = L.rectangle([[50, -115], [45, -105]]).addTo(map);
+    var rec = L.rectangle([
+      [50, -115],
+      [45, -105],
+    ]).addTo(map);
     rec.enableEdit();
 
-    const updateOutput = function() {
+    const updateOutput = function () {
       const format = document.getElementById("format").value;
       const output = document.getElementById("output");
       bounds = rec.getBounds();
@@ -116,15 +129,28 @@
         output.textContent = `--x_min=${bounds._southWest.lng} --y_min=${bounds._southWest.lat} --x_max=${bounds._northEast.lng} --y_max=${bounds._northEast.lat}`;
       }
     };
+    const copyToClipboard = function () {
+      navigator.clipboard
+        .writeText(document.getElementById("output").textContent)
+        .then(
+          function () {
+            console.log("Async: Copying to clipboard was successful!");
+          },
+          function (err) {
+            console.error("Async: Could not copy text: ", err);
+          }
+        );
+    };
 
     map.on("editable:editing", updateOutput);
     map.on("editable:dragend", updateOutput);
     document.getElementById("format").addEventListener("change", updateOutput);
+    document.getElementById("copy").addEventListener("click", copyToClipboard);
 
     updateOutput();
 
-    document.body.addEventListener("dragover", ev => ev.preventDefault());
-    document.body.addEventListener("drop", ev => {
+    document.body.addEventListener("dragover", (ev) => ev.preventDefault());
+    document.body.addEventListener("drop", (ev) => {
       ev.stopPropagation();
       ev.preventDefault();
 
