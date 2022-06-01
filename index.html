@@ -114,7 +114,10 @@
     map.on("moveend", () => mapToStorage(map));
     window.addEventListener("hashchange", () => hashToMap(map));
 
-    const bbox = JSON.parse(window.localStorage.getItem('bbox') || 
+    const bbox = JSON.parse(window.localStorage.getItem("bbox")) || [
+      [50, -115],
+      [45, -105],
+    ];
     const rec = L.rectangle(bbox).addTo(map);
     rec.enableEdit();
 
@@ -149,20 +152,36 @@
       window.localStorage.setItem(
         "bbox",
         JSON.stringify([
-          [bounds._southWest.lng, bounds._southWest.lat],
-          [bounds._northEast.lng, bounds._northEast.lat],
+          [bounds._southWest.lat, bounds._southWest.lng],
+          [bounds._northEast.lat, bounds._northEast.lng],
         ])
       );
     };
-
-    map.on("editable:editing", updateOutput);
+    const storageToFormat = function () {
+      const format = window.localStorage.getItem("format");
+      if (format) {
+        document.getElementById("format").value = format;
+      }
+    };
+    const formatToStorage = function () {
+      const format = document.getElementById("format").value;
+      window.localStorage.setItem("format", format);
+    };
+    map.on("editable:editing", () => {
+      updateOutput();
+      bboxToStorage();
+    });
     map.on("editable:dragend", () => {
       updateOutput();
       bboxToStorage();
     });
-    document.getElementById("format").addEventListener("change", updateOutput);
+    document.getElementById("format").addEventListener("change", () => {
+      updateOutput();
+      formatToStorage();
+    });
     document.getElementById("copy").addEventListener("click", copyToClipboard);
 
+    storageToFormat();
     updateOutput();
 
     document.body.addEventListener("dragover", (ev) => ev.preventDefault());
