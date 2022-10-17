@@ -52,6 +52,7 @@
             <option value="WKT">WKT</option>
             <option value="--bbox">--bbox</option>
             <option value="minmax">--x_min --y_min --x_max --y_max</option>
+            <option value="osmosispoly">Osmosis Polygon Fitler File</option>
           </select>
         </label>
         <br />
@@ -133,6 +134,16 @@
         output.textContent = `--bbox=${bounds._southWest.lng},${bounds._southWest.lat},${bounds._northEast.lng},${bounds._northEast.lat}`;
       } else if (format == "minmax") {
         output.textContent = `--x_min=${bounds._southWest.lng} --y_min=${bounds._southWest.lat} --x_max=${bounds._northEast.lng} --y_max=${bounds._northEast.lat}`;
+      } else if (format == "osmosispoly") {
+        output.textContent = `bbox
+first_area
+     ${bounds._southWest.lng} ${bounds._southWest.lat}
+     ${bounds._southWest.lng} ${bounds._northEast.lat}
+     ${bounds._northEast.lng} ${bounds._northEast.lat}
+     ${bounds._northEast.lng} ${bounds._southWest.lat}
+     ${bounds._southWest.lng} ${bounds._southWest.lat}
+END
+END`;
       }
     };
     const copyToClipboard = function () {
