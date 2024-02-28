@@ -83,6 +83,16 @@
           ].join("/")
       );
     };
+    const mapToHash = function (map) {
+      window.location.hash = `#${map.getZoom()}/${map.getCenter().lat}/${
+        map.getCenter().lng
+      }`;
+    };
+    const hashToMap = function (map, center = [40, -100], zoom = 5) {
+      if (window.location.hash.includes("/"))
+        [zoom, ...center] = window.location.hash.substr(1).split("/");
+      map.setView(center, zoom);
+    };
     const storageToMap = function (map, center = [40, -100], zoom = 5) {
       hash = window.localStorage.getItem("maphash") || "";
       if (hash.indexOf("#") === 0) {
@@ -104,7 +114,7 @@
 
     var map = L.map("map", { editable: true }),
       tilelayer = L.tileLayer(
-        "http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+        "http://tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
           maxZoom: 20,
           attribution:
@@ -112,8 +122,13 @@
         }
       ).addTo(map);
     storageToMap(map);
+    hashToMap(map, map.getCenter(), map.getZoom());
     mapToStorage(map);
-    map.on("moveend", () => mapToStorage(map));
+    mapToHash(map);
+    map.on("moveend", () => {
+      mapToStorage(map);
+      mapToHash(map);
+    });
     window.addEventListener("hashchange", () => hashToMap(map));
 
     const bbox = JSON.parse(window.localStorage.getItem("bbox")) || [
