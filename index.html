@@ -53,6 +53,7 @@
             <option value="WKT">WKT</option>
             <option value="--bbox">--bbox</option>
             <option value="minmax">--x_min --y_min --x_max --y_max</option>
+            <option value="geojson">geojson</option>
             <option value="osmosispoly">Osmosis Polygon Fitler File</option>
           </select>
         </label>
@@ -142,6 +143,10 @@
       const format = document.getElementById("format").value;
       const output = document.getElementById("output");
       bounds = rec.getBounds();
+      const west = bounds._southWest.lng;
+      const south = bounds._southWest.lat;
+      const east = bounds._northEast.lng;
+      const north = bounds._northEast.lat;
       if (format == "ST_MakeEnvelope") {
         output.textContent = `ST_MakeEnvelope(${bounds._southWest.lng}, ${bounds._southWest.lat}, ${bounds._northEast.lng}, ${bounds._northEast.lat}, 4326)`;
       } else if (format == "[x1, y1, x2, y2]") {
@@ -152,6 +157,23 @@
         output.textContent = `--bbox=${bounds._southWest.lng},${bounds._southWest.lat},${bounds._northEast.lng},${bounds._northEast.lat}`;
       } else if (format == "minmax") {
         output.textContent = `--x_min=${bounds._southWest.lng} --y_min=${bounds._southWest.lat} --x_max=${bounds._northEast.lng} --y_max=${bounds._northEast.lat}`;
+      } else if (format == "geojson") {
+        output.textContent = JSON.stringify({
+          type: "Feature",
+          geometry: {
+            type: "Polygon",
+            coordinates: [
+              [
+                [west, south],
+                [east, south],
+                [east, north],
+                [west, north],
+                [west, south],
+              ],
+            ],
+          },
+          properties: {},
+        });
       } else if (format == "osmosispoly") {
         output.textContent = `bbox
 first_area
